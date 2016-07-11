@@ -8,22 +8,30 @@
  *
  */
 $(document).ready(function(){
-  (function messageBoard(){ // closure to limit scope
 
-    // Request single topic from url or show all for this page/section/group; called implicitly
+  (function messageBoard(){
+
+    /**
+     * Request a single topic via url, OR show all topics for this page/section/group
+     * @param {Number} tid - Topic ID
+     * @return void
+     */
     function getTopics(tid){ // optional topic_id (tid)
 
-      var p, uP, lidT, lid = undefined;
+      var params = undefined;
 
-      // Check URL for a current topic_id (mbt)
+      // Check URL for a current topic_id, i.e. we're viewing a topic
       if($.qs["mbt"] !== undefined){
+
+        // Show comments
+        updateComments();
 
         // If a topic is clicked on, expect a tid and override the mbt
         if(tid) $.qs["mbt"] = tid;
 
         // Configure params and make API call
-        p = {"method":"getTopics","params":{"topics":[$.qs["mbt"]]}};
-        $.post('api.php',p,function(r){ fillTopics(r) });
+        params = {"method":"getTopics","params":{"topics":[$.qs["mbt"]]}};
+        $.post('api.php',params,function(r){ fillTopics(r) });
 
         // Show the reply box, as we're on a topic page
         $('#msgb-comment-reply').show();
@@ -31,60 +39,72 @@ $(document).ready(function(){
       // if no topic set in url, show all topics for this page/seciton/group
       } else {
 
-        // check for these URL types to use as locator type and ID
-        uP = ['section_id','group_id'];
-
-        // Find and set locator ID, type
-        _.each(uP,function(v){ if($.qs[v] !== undefined) {
-          lid = parseInt($.qs[v]); // url params are strings by default
-          lidT = v; // e.g. "section_id" from url
-        }});
-
         // Check to make sure we have valid url data before making an API call
-        if(lid && lidT) {
-          p = {"method":"getTopics","params":{"locator_id":lid,"locator_type": lidT}};
-          $.post('api.php',p,function(v){ fillTopics(v) }); // ajax and call fill
+        var pT = pageType();
+        if(pT.type && pT.id) {
+          params = {"method":"getTopics","params":{"locator_id":pT.id,"locator_type": pT.type}};
+          $.post('api.php',params,function(v){ fillTopics(v) });
+
+        // Show Create New Topic form
+        $('#msgb-new-topic').show();
 
         // OR return an error message if we have bad url data
         } else {
           console.log("Error: lid or lidT");
         }
       }
+    }
 
-      // Insert topics returned from API into the DOM
-      function fillTopics(Ts){
-        _.each(Ts,function(o,i){
-          //console.log(o);
-          $('#msgb-topics').append($('<div data-id="'+o.id+'"><a href="#">'+o.name+'</a></div>'));
-        })
-      }
+    // Insert topics returned from API into the DOM
+    function fillTopics(Ts){
+      console.log("fillTopics()");
+      _.each(Ts,function(o,i){
+        console.log("next topic to show:");
+        console.log(o);
+
+        $T = $('#msgb-topics-template').clone().removeAttr("id").attr("data-id", o.id);
+        $T.find('.msgb-topic-name').html(o.name);
+        $T.find('.msgb-topic-date').attr('datetime',o.date_create);
+        $('#msgb-topics').append($T);
+      });
+      $('time.timeago').timeago();
     }
 
     // Call API to get comments for the current topic_id (mbt)
     // if an ID is passed, we're looking to append only that comment
-    function getComments(id){
-      console.log("getComments");
+    function updateComments(id){
+
+      // Show comments box
+      $('#msgb-comments').show();
 
       // only load comments if a topic is picked
       if($.qs["mbt"] !== undefined){
-        p = {"method":"getComments","params":{"topic_id":$.qs["mbt"],"comment_id":id}}; // create API params
-        $.post('api.php',p,function(v){ console.log(v); fillComments(v) }); // ajax and call fill
+        p = {"method":"updateComments","params":{"topic_id":$.qs["mbt"],"comment_id":id}};
+        $.post('api.php',p,function(v){ fillComments(v) }); // ajax and call fill
       }
 
       // Insert comments from API into DOM
       function fillComments(o){
+        console.log("Filling comments:");
         _.each(o,function(o,i){
-          $('#msgb-comments').append('<div data-id="'+o.id+'">'+o.content+'</div>');
-        })
+          console.log(o);
+          $T = $('#msgb-comment-template').clone().removeAttr("id").attr("data-id", o.id);
+          $T.find('.msgb-comment-body').html(o.content);
+          $T.find('.msgb-comment-header').html("Bryan Potts,<time ");
+          $('#msgb-comments').append($T);
+        });
+        $('.msgb-delete-comment').on("click", function(){ deleteComment($(this).parent().parent(".msgb-comment")) });
       }
     }
 
     // Save new Comments/Replies
     function saveComment(){
-      p = {"method":"newComment","params":{"topic_id":$.qs["mbt"], "content": $('#msgb-reply-text').val() }};
+      p = {"method":"newComment","params":{"topic_id":$.qs["mbt"], "content": CKEDITOR.instances.msgb_reply_text.getData() }};
+      console.log("comment params:");
+      console.log(p);
       $.post('api.php',p,function(v){
-        console.log(v);
-        if(v.status=="success") getComments(v.comment_id);
+        if(v.status=="success") updateComments(v.comment_id);
+        CKEDITOR.instances.msgb_reply_text.setData('');
       });
     }
 
@@ -99,8 +119,50 @@ $(document).ready(function(){
     // Comment, Reply button clicked
     $('#msgb-send-reply').click(function(){ saveComment(); });
 
-    // initialize initial view (show all topics, get comments)
-    getTopics(); getComments();
+    // Delete Comment
+    function deleteComment(o){
+      p = {"method":"deleteComment","params":{ "comment_id": o.attr('data-id') }};
+      $.post('api.php',p,function(v){ if(v.status=="success") o.remove(); });
+    }
+
+    // Save New Topic
+    $('#msgb-topic-save').click(function(){
+      console.log("saving new topic... ID: " + $.qs['section_id']);
+      p = {
+        "method":"newTopic",
+        "params": {
+          "name": $('#msgb-new-topic-name').val(),
+          "locator_id": $.qs['section_id'], // TODO: getLocatorID(),
+          "locator_type": 'section_id',     // TODO: getLocatorType(),
+          "comment": $('#msgb-new-topic-comment').val()
+        }
+      };
+      $.post('api.php',p,function(v){ if(v.status=="success") console.log(v.topic); fillTopics([v.topic]) });
+    });
+
+    // initialize initial view (show all topics, get comments), starting with finding the page type
+    if(pageType() !== false){ getTopics(); }
+
+    // Initialize CKEditor
+    CKEDITOR.replace( 'msgb_reply_text', {toolbar: [
+      { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ], items: [ 'Bold', 'Italic', 'Underline', 'Strike' ] },
+      { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl', 'Language' ] },
+      { name: 'links', items: [ 'Link', 'Unlink'] },
+      { name: 'insert', items: [ 'Image', 'Table' ] }
+    ]} );
+
+    /* Helper functions */
+
+    // Get page type (section ID, page ID, etc)
+    function pageType(){
+      types = ['section_id','page_id','group_id'];
+      var match= false, pT = false;
+      _.each(types, function(qv,qk){
+        match = $.qs[qv] !== undefined ? $.qs[qv] : undefined;
+        if(match) pT = {"type":qv,"id":match}
+      });
+      if(pT){ return pT; } else { return false }
+    }
 
   })();
 
@@ -109,7 +171,7 @@ $(document).ready(function(){
 
 
 
-/* Utility functions - Use caution when editing or using these */
+/* Utility functions - You probably don't want to edit these */
 
 (function($) {
   $.qs = (function(a) {

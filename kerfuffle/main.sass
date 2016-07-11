@@ -1,7 +1,70 @@
 #msgb-wrap
+  max-width: 600px
+  margin: 20px auto
+  #msgb-topics-template
+    display: none
+  #msgb-topics
+    border-top: 1px solid #c0c0c0
+    cursor: pointer
+  #msgb-topics > div
+    font-size: 15px
+    height: 38px
+    padding: 8px 0 0 10px
+    border-bottom: 1px solid #c0c0c0
+    background-color: #fafafa
+    &:nth-of-type(odd)
+      background-color: #daffe2
+    .msgb-topic-name
+      float: left
+    .msgb-topic-date
+      font-size: 12px
+      float: right
+      margin-right: 10px
+  #msgb-topics-ctrls
+    margin: 8px 0 4px 0px
+    font-weight: normal
+  #msgb-comment-template
+    display: none
+  .msgb-user-image
+    float: left
+    clear: both
+    margin: 0 12px 12px 0
+    border-radius: 35px
+    overflow: hidden
+    img
+      max-width: 50px
+  .msgb-comment-footer
+    font-size: 10px
+    font-weight: bold
+  .msgb-comment-header
+    font-weight: bold
+    color: gray
+  #msgb-comments
+    display: none
+    .msgb-comment
+      color: #343434
+      width: 100%
+      vertical-align: super
+      //border-left: 1px solid gray
+      padding: 10px 0 10px 12px
+      margin: 0 0 6px 0
+      &:nth-of-type(odd)
+        background-color: #f7f7f7
+  textarea
+    display: block
+    width: 100%
+    height: 150px
   #msgb-comment-reply
     display: none
-    textarea
+  #msgb-new-topic
+    display: none
+    input
       display: block
-      width: 400px
-      height: 150px
+      width: 100%
+      height: 40px
+    #sticky-wrap
+      input
+        float: left
+        width: 40px
+      label
+        float: left

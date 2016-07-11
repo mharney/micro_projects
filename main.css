@@ -1,0 +1,8 @@
+#msgb-wrap #msgb-comment-reply {
+  display: none; }
+  #msgb-wrap #msgb-comment-reply textarea {
+    display: block;
+    width: 400px;
+    height: 150px; }
+
+/*# sourceMappingURL=main.css.map */

@@ -1,8 +1,70 @@
-#msgb-wrap #msgb-comment-reply {
-  display: none; }
-  #msgb-wrap #msgb-comment-reply textarea {
+#msgb-wrap {
+  max-width: 600px;
+  margin: 20px auto; }
+  #msgb-wrap #msgb-topics-template {
+    display: none; }
+  #msgb-wrap #msgb-topics {
+    border-top: 1px solid #c0c0c0;
+    cursor: pointer; }
+  #msgb-wrap #msgb-topics > div {
+    font-size: 15px;
+    height: 38px;
+    padding: 8px 0 0 10px;
+    border-bottom: 1px solid #c0c0c0;
+    background-color: #fafafa; }
+    #msgb-wrap #msgb-topics > div:nth-of-type(odd) {
+      background-color: #daffe2; }
+    #msgb-wrap #msgb-topics > div .msgb-topic-name {
+      float: left; }
+    #msgb-wrap #msgb-topics > div .msgb-topic-date {
+      font-size: 12px;
+      float: right;
+      margin-right: 10px; }
+  #msgb-wrap #msgb-topics-ctrls {
+    margin: 8px 0 4px 0px;
+    font-weight: normal; }
+  #msgb-wrap #msgb-comment-template {
+    display: none; }
+  #msgb-wrap .msgb-user-image {
+    float: left;
+    clear: both;
+    margin: 0 12px 12px 0;
+    border-radius: 35px;
+    overflow: hidden; }
+    #msgb-wrap .msgb-user-image img {
+      max-width: 50px; }
+  #msgb-wrap .msgb-comment-footer {
+    font-size: 10px;
+    font-weight: bold; }
+  #msgb-wrap .msgb-comment-header {
+    font-weight: bold;
+    color: gray; }
+  #msgb-wrap #msgb-comments {
+    display: none; }
+    #msgb-wrap #msgb-comments .msgb-comment {
+      color: #343434;
+      width: 100%;
+      vertical-align: super;
+      padding: 10px 0 10px 12px;
+      margin: 0 0 6px 0; }
+      #msgb-wrap #msgb-comments .msgb-comment:nth-of-type(odd) {
+        background-color: #f7f7f7; }
+  #msgb-wrap textarea {
     display: block;
-    width: 400px;
+    width: 100%;
     height: 150px; }
+  #msgb-wrap #msgb-comment-reply {
+    display: none; }
+  #msgb-wrap #msgb-new-topic {
+    display: none; }
+    #msgb-wrap #msgb-new-topic input {
+      display: block;
+      width: 100%;
+      height: 40px; }
+    #msgb-wrap #msgb-new-topic #sticky-wrap input {
+      float: left;
+      width: 40; }
+    #msgb-wrap #msgb-new-topic #sticky-wrap label {
+      float: left; }
 
 /*# sourceMappingURL=main.css.map */
